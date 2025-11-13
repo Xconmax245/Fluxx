@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fluxx DAO AI Co-Pilot - Documentation</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-gray-200 font-sans leading-relaxed">
+
+  <!-- Header -->
+  <header class="bg-black bg-opacity-50 backdrop-blur-md fixed w-full z-50 shadow-md">
+    <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+      <div class="flex items-center gap-2 text-2xl font-bold text-blue-400">
+        <img src="/assets/logo.png" alt="Fluxx logo" class="w-8 h-8">
+        <span>Fluxx</span>
+      </div>
+      <nav class="hidden md:flex gap-6 font-medium text-gray-400">
+        <a href="#overview" class="hover:text-blue-400 transition">Overview</a>
+        <a href="#features" class="hover:text-blue-400 transition">Features</a>
+        <a href="#setup" class="hover:text-blue-400 transition">Setup</a>
+        <a href="#api" class="hover:text-blue-400 transition">API</a>
+        <a href="#usage" class="hover:text-blue-400 transition">Usage</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="pt-24 container mx-auto px-6">
+
+    <!-- Hero -->
+    <section id="overview" class="text-center mb-16">
+      <h1 class="text-4xl sm:text-5xl font-bold text-blue-400 mb-4">Fluxx DAO AI Co-Pilot</h1>
+      <p class="text-gray-400 max-w-2xl mx-auto text-lg sm:text-xl">
+        An AI-powered assistant for DAO governance. Summarize proposals, draft documents, analyze voting trends, and get strategic insights.
+      </p>
+    </section>
+
+    <!-- Features -->
+    <section id="features" class="mb-16">
+      <h2 class="text-3xl sm:text-4xl font-bold text-blue-400 mb-6">Features</h2>
+      <ul class="space-y-3 list-disc list-inside text-gray-300">
+        <li>Interactive AI chat demo for DAO governance</li>
+        <li>Summarize complex DAO proposals</li>
+        <li>Draft governance documents</li>
+        <li>Analyze voting patterns and trends</li>
+        <li>Responsive design with TailwindCSS</li>
+        <li>Lottie animations for visual engagement</li>
+      </ul>
+    </section>
+
+    <!-- Setup -->
+    <section id="setup" class="mb-16">
+      <h2 class="text-3xl sm:text-4xl font-bold text-blue-400 mb-6">Setup Instructions</h2>
+      <ol class="list-decimal list-inside space-y-3 text-gray-300">
+        <li>Clone the project repository.</li>
+        <li>Install dependencies: <code class="bg-gray-800 px-2 py-1 rounded">npm install</code></li>
+        <li>Set your Gemini/OpenRouter API key in <code class="bg-gray-800 px-2 py-1 rounded">server.js</code>.</li>
+        <li>Run the backend server: <code class="bg-gray-800 px-2 py-1 rounded">node server.js</code></li>
+        <li>Open <code class="bg-gray-800 px-2 py-1 rounded">index.html</code> in your browser.</li>
+      </ol>
+    </section>
+
+    <!-- API -->
+    <section id="api" class="mb-16">
+      <h2 class="text-3xl sm:text-4xl font-bold text-blue-400 mb-6">API Integration</h2>
+      <p class="mb-4 text-gray-300">The project uses a Node.js proxy to securely connect to the AI API:</p>
+      <pre class="bg-gray-800 p-4 rounded text-sm overflow-x-auto">
+POST /api/chat
+Headers:
+  Content-Type: application/json
+  Authorization: Bearer YOUR_API_KEY
+Body:
+{
+  "messages": [
+    {"role": "system", "content": "You are AI Co-Pilot, a Web3/DAO governance assistant."},
+    {"role": "user", "content": "User message here"}
+  ]
+}
+Response:
+{
+  "text": "AI response text"
+}
+      </pre>
+    </section>
+
+    <!-- Usage -->
+    <section id="usage" class="mb-16">
+      <h2 class="text-3xl sm:text-4xl font-bold text-blue-400 mb-6">Frontend Usage</h2>
+      <p class="mb-4 text-gray-300">The AI Co-Pilot chat works on the frontend using the following JS structure:</p>
+      <ul class="list-disc list-inside space-y-2 text-gray-300">
+        <li>Add user messages with <code class="bg-gray-800 px-1 py-0.5 rounded">addMessage("You", text)</code></li>
+        <li>Send messages to backend API via <code class="bg-gray-800 px-1 py-0.5 rounded">fetch("/api/chat")</code></li>
+        <li>Display AI responses in <code class="bg-gray-800 px-1 py-0.5 rounded">#chatMessages</code></li>
+        <li>Include typing indicators with Lottie animation</li>
+        <li>Enable demo suggestion buttons to prefill chat input</li>
+      </ul>
+    </section>
+
+    <!-- Footer -->
+    <footer class="border-t border-gray-700 py-6 text-center text-gray-500">
+      &copy; 2025 Fluxx DAO AI Co-Pilot. All rights reserved.
+    </footer>
+
+  </main>
+</body>
+</html>

@@ -1,0 +1,1807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI DAO Co-Pilot - Govern Smarter with AI</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- CDN IMPORTS -->
+    <!-- TailwindCSS - Primary styling system -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- AOS.js - Scroll animations -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    
+    <!-- Lottie - Vector animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
+    
+    <!-- Axios - API calls -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    
+    <!-- SweetAlert2 - Modal UI -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <!-- LocalForage - Local storage -->
+    <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- Ethers.js + Web3Modal + Wallet Providers -->
+<script src="https://cdn.jsdelivr.net/npm/ethers/dist/ethers.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/web3modal/dist/index.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider/dist/umd/index.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@coinbase/wallet-sdk/dist/CoinbaseWalletSDK.min.js"></script>
+<script src="server.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #000000;
+            color: #F3F4F6;
+            overflow-x: hidden;
+        }
+        
+        /* Dark Grid Background with Animation */
+        .grid-background {
+            background-image: 
+                linear-gradient(to right, rgba(59, 130, 246, 0.1) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(59, 130, 246, 0.1) 1px, transparent 1px);
+            background-size: 40px 40px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            animation: gridMove 20s linear infinite;
+        }
+        
+        @keyframes gridMove {
+            0% { background-position: 0 0; }
+            100% { background-position: 40px 40px; }
+        }
+        
+        .gradient-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at top, rgba(59, 130, 246, 0.15), transparent 50%),
+                        radial-gradient(ellipse at bottom, rgba(139, 92, 246, 0.15), transparent 50%);
+            z-index: -1;
+            pointer-events: none;
+            animation: gradientShift 15s ease-in-out infinite;
+        }
+        
+        @keyframes gradientShift {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        /* Glow Effects */
+        .glow-blue {
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+            animation: pulseGlow 3s ease-in-out infinite;
+        }
+        
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.5); }
+            50% { box-shadow: 0 0 40px rgba(59, 130, 246, 0.8); }
+        }
+        
+        .glow-violet {
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+        }
+        
+        .text-glow {
+            text-shadow: 0 0 20px rgba(59, 130, 246, 0.8);
+            animation: textGlowPulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes textGlowPulse {
+            0%, 100% { text-shadow: 0 0 20px rgba(59, 130, 246, 0.8); }
+            50% { text-shadow: 0 0 30px rgba(59, 130, 246, 1); }
+        }
+        
+        /* Button Hover Effects */
+        .btn-primary {
+            background: linear-gradient(135deg, #3B82F6, #007BFF);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        .btn-primary:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+        
+        .btn-primary:hover {
+            transform: scale(1.05) translateY(-2px);
+            box-shadow: 0 0 30px rgba(59, 130, 246, 0.6);
+        }
+        
+        .btn-secondary {
+            border: 2px solid #3B82F6;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(59, 130, 246, 0.1);
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+            transform: scale(1.05) translateY(-2px);
+        }
+        
+        /* Card Hover Effects */
+        .feature-card {
+            background: rgba(10, 10, 10, 0.8);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(59, 130, 246, 0.1), transparent);
+            transform: rotate(45deg);
+            transition: all 0.6s;
+        }
+        
+        .feature-card:hover::before {
+            left: 100%;
+        }
+        
+        .feature-card:hover {
+            border-color: rgba(59, 130, 246, 0.6);
+            box-shadow: 0 0 30px rgba(59, 130, 246, 0.3);
+            transform: translateY(-10px);
+        }
+        
+        /* Stats Card Animation */
+        .stat-card {
+            background: rgba(10, 10, 10, 0.8);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            border-color: rgba(139, 92, 246, 0.6);
+            box-shadow: 0 0 25px rgba(139, 92, 246, 0.4);
+            transform: scale(1.05);
+        }
+        
+        /* Mock Window */
+        .mock-window {
+            background: rgba(15, 15, 15, 0.95);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+        
+        .window-header {
+            background: rgba(20, 20, 20, 0.9);
+            padding: 12px;
+            border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+        }
+        
+        .window-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 6px;
+            animation: dotPulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes dotPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        /* Blinking Cursor */
+        .cursor {
+            display: inline-block;
+            width: 2px;
+            height: 20px;
+            background: #3B82F6;
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+        
+        /* Chat Bubble */
+        .chat-bubble {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 16px;
+            padding: 12px 16px;
+            margin: 8px 0;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Glassy Container */
+        .glass-container {
+            background: rgba(10, 10, 10, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 16px;
+        }
+        
+        /* Gradient Text */
+        .gradient-text {
+            background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        /* Sticky Header */
+        header {
+            backdrop-filter: blur(10px);
+            background: rgba(0, 0, 0, 0.8);
+            border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        header.scrolled {
+            background: rgba(0, 0, 0, 0.95);
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.2);
+        }
+        
+        /* Timeline Step */
+        .timeline-step {
+            position: relative;
+        }
+        
+        .timeline-step::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: -50%;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(to right, rgba(59, 130, 246, 0.5), transparent);
+        }
+        
+        .timeline-step:last-child::after {
+            display: none;
+        }
+        
+        /* Scroll Smooth */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        /* Loading Animation */
+        .loading-dots {
+            display: inline-flex;
+            gap: 4px;
+        }
+        
+        .loading-dot {
+            width: 8px;
+            height: 8px;
+            background: #3B82F6;
+            border-radius: 50%;
+            animation: loadingBounce 1.4s infinite ease-in-out;
+        }
+        
+        .loading-dot:nth-child(1) { animation-delay: -0.32s; }
+        .loading-dot:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes loadingBounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+        
+        /* Testimonial Card */
+        .testimonial-card {
+            background: rgba(10, 10, 10, 0.8);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .testimonial-card:hover {
+            border-color: rgba(59, 130, 246, 0.5);
+            transform: translateY(-5px);
+        }
+        
+        /* Number Counter Animation */
+        .counter {
+            font-variant-numeric: tabular-nums;
+        }
+        
+        /* Mobile Menu */
+        .mobile-menu {
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .mobile-menu.active {
+            transform: translateX(0);
+        }
+        
+        /* Floating Animation */
+        .float-animation {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+            .glass-hover {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .glass-hover:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    }
+    .glass-hover {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.glass-hover:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+}
+.chat-bubble.user { background:#1f2937; color:#a5f3fc; text-align:right; }
+.chat-bubble.ai { background:#111827; color:#60a5fa; text-align:left; }
+.typing-indicator { font-style:italic; margin:6px 0; }
+.hidden { display:none; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Grid Background -->
+    <div class="grid-background"></div>
+    <div class="gradient-overlay"></div>
+    
+  <!-- ============= HEADER START ============= -->
+<header id="header" class="fixed top-0 left-0 w-full z-50 bg-black/70 backdrop-blur-md">
+  <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+    
+    <!-- Logo -->
+    <div class="flex items-center gap-2 text-2xl font-bold gradient-text cursor-pointer select-none">
+      <img src="/Gemini_Generated_Image_s3shnps3shnps3sh (1).png" alt="AI DAO Co-Pilot logo" class="w-8 h-8 object-contain" loading="eager" decoding="async"/>
+      <span>Fluxx</span>
+    </div>
+
+    <!-- Desktop nav -->
+    <nav class="hidden md:flex items-center space-x-6 lg:space-x-8">
+      <a href="#features" class="hover:text-blue-400 transition-all duration-300 font-medium">Features</a>
+      <a href="#demo" class="hover:text-blue-400 transition-all duration-300 font-medium">Demo</a>
+      <a href="#benefits" class="hover:text-blue-400 transition-all duration-300 font-medium">Benefits</a>
+      <a href="#testimonials" class="hover:text-blue-400 transition-all duration-300 font-medium">Testimonials</a>
+      <a href="#roadmap" class="hover:text-blue-400 transition-all duration-300 font-medium">Roadmap</a>
+    </nav>
+
+    <!-- Wallet / Mobile menu -->
+    <div class="flex items-center gap-2">
+      <button id="connectWalletBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 sm:px-5 py-2 rounded-full font-medium flex items-center gap-2 text-sm sm:text-base">
+        <i data-lucide="wallet" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+        <span>Connect Wallet</span>
+      </button>
+
+      <!-- Mobile Menu Button -->
+      <button id="mobileMenuBtn" class="md:hidden text-white ml-2">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile Menu -->
+  <div id="mobileMenu" class="mobile-menu md:hidden fixed top-0 right-0 w-64 h-full bg-black bg-opacity-95 border-l border-blue-500 border-opacity-30 p-6 transform translate-x-full transition-transform duration-300">
+    <button id="closeMobileMenu" class="absolute top-4 right-4 text-white">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+      </svg>
+    </button>
+    <nav class="flex flex-col space-y-6 mt-12">
+      <a href="#features" class="text-lg hover:text-blue-400 transition">Features</a>
+      <a href="#demo" class="text-lg hover:text-blue-400 transition">Demo</a>
+      <a href="#benefits" class="text-lg hover:text-blue-400 transition">Benefits</a>
+      <a href="#testimonials" class="text-lg hover:text-blue-400 transition">Testimonials</a>
+      <a href="#roadmap" class="text-lg hover:text-blue-400 transition">Roadmap</a>
+    </nav>
+  </div>
+</header>
+<!-- ============= HEADER END ============= -->
+
+<!-- ============= HERO SECTION START ============= -->
+<section class="min-h-screen flex flex-col md:flex-row items-center pt-24 pb-12 px-4 sm:px-6 lg:px-8">
+  <div class="container mx-auto grid md:grid-cols-2 gap-12 items-center">
+    
+    <!-- Left Column -->
+    <div class="text-center md:text-left" data-aos="fade-up" data-aos-duration="1000">
+      <div class="inline-block mb-4 px-4 py-2 bg-blue-500 bg-opacity-10 border border-blue-500 border-opacity-30 rounded-full text-sm font-semibold text-blue-400">
+        Next-Gen DAO Governance
+      </div>
+      <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-4 sm:mb-6 leading-tight">
+        Govern Smarter with <span class="gradient-text text-glow">Fluxx</span>
+      </h1>
+      <p class="text-base sm:text-lg md:text-xl text-gray-400 mb-4 sm:mb-6 leading-relaxed">
+        Revolutionize your decentralized organization with AI-powered governance automation. Effortlessly summarize complex proposals, draft documents, receive intelligent voting reminders, and make data-driven decisions faster than ever.
+      </p>
+      <p class="text-sm sm:text-base md:text-lg text-gray-500 mb-6 sm:mb-8 leading-relaxed">
+        Join the future of DAO management where AI meets blockchain for seamless, transparent, and efficient governance workflows that scale with your community.
+      </p>
+
+      <!-- CTA Buttons -->
+      <div class="flex flex-wrap gap-3 justify-center md:justify-start">
+        <a href="#demo" class="btn-primary px-6 sm:px-8 py-3 sm:py-4 rounded-full font-semibold inline-flex items-center gap-2 text-sm sm:text-lg">
+          <i data-lucide="rocket" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+          Launch Co-Pilot
+        </a>
+        <a href="#features" class="btn-secondary px-6 sm:px-8 py-3 sm:py-4 rounded-full font-semibold inline-flex items-center gap-2 text-sm sm:text-lg">
+          <i data-lucide="book-open" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+          Explore Features
+        </a>
+      </div>
+
+      <!-- Stats Row -->
+      <div class="grid grid-cols-3 gap-4 sm:gap-6 mt-8 sm:mt-12 text-center md:text-left">
+        <div data-aos="fade-up" data-aos-delay="200">
+          <div class="text-2xl sm:text-3xl md:text-4xl font-bold text-blue-400 counter" data-target="9766">0</div>
+          <div class="text-xs sm:text-sm text-gray-500 mt-1">Proposals Analyzed</div>
+        </div>
+        <div data-aos="fade-up" data-aos-delay="300">
+          <div class="text-2xl sm:text-3xl md:text-4xl font-bold text-violet-400 counter" data-target="673">0</div>
+          <div class="text-xs sm:text-sm text-gray-500 mt-1">DAOs Connected</div>
+        </div>
+        <div data-aos="fade-up" data-aos-delay="400">
+          <div class="text-2xl sm:text-3xl md:text-4xl font-bold text-green-400">99.9%</div>
+          <div class="text-xs sm:text-sm text-gray-500 mt-1">Uptime</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column - Mock Window -->
+   <!-- Right Column - Mock Window with dynamic demo chat -->
+<div data-aos="fade-up" data-aos-duration="1000" data-aos-delay="200" class="mt-12 md:mt-0 flex justify-center md:justify-end w-full">
+  <div class="mock-window glow-blue w-full max-w-md sm:max-w-lg md:max-w-xl">
+    <!-- Window Header -->
+    <div class="window-header flex items-center justify-between px-4 py-2 border-b border-gray-700">
+      <div class="flex items-center gap-2">
+        <span class="window-dot bg-red-500"></span>
+        <span class="window-dot bg-yellow-500"></span>
+        <span class="window-dot bg-green-500"></span>
+        <span class="ml-2 text-sm sm:text-base text-gray-400 font-medium">AI Co-Pilot Terminal v2.0</span>
+      </div>
+      <div class="text-xs sm:text-sm text-gray-500">●●● Live</div>
+    </div>
+
+    <!-- Chat Content -->
+    <div class="p-4 sm:p-6 flex flex-col space-y-3">
+      <!-- Lottie Animation -->
+      <div id="heroLottie" class="w-24 h-24 sm:w-32 sm:h-32 mx-auto mb-4"></div>
+
+      <!-- Dynamic chat container -->
+      <div id="heroChatMessages" class="space-y-2 max-h-60 sm:max-h-72 overflow-y-auto px-2">
+        <!-- Preloaded system message -->
+        <div class="chat-bubble text-sm sm:text-base text-gray-300 p-3 rounded-lg bg-black bg-opacity-30 border border-gray-700">
+          <span class="text-blue-400 font-semibold">AI Co-Pilot:</span> Hello! I'm your intelligent governance assistant. I can help you with:
+          <ul class="ml-4 mt-1 list-disc text-xs sm:text-sm text-gray-400">
+            <li>Summarizing complex DAO proposals</li>
+            <li>Drafting governance documents</li>
+            <li>Analyzing voting patterns and trends</li>
+            <li>Explaining blockchain governance concepts</li>
+            <li>Providing strategic recommendations</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Typing Indicator -->
+      <div id="heroTypingIndicator" class="hidden chat-bubble p-2 sm:p-3 rounded-lg bg-black bg-opacity-30 border border-gray-700 flex items-center space-x-2">
+        <div id="heroDemoLottie" class="w-6 h-6"></div>
+        <span class="text-gray-400 text-xs sm:text-sm">AI is analyzing your request</span>
+        <div class="loading-dots flex space-x-1">
+          <div class="loading-dot w-1 h-1 bg-gray-400 rounded-full animate-bounce"></div>
+          <div class="loading-dot w-1 h-1 bg-gray-400 rounded-full animate-bounce delay-200"></div>
+          <div class="loading-dot w-1 h-1 bg-gray-400 rounded-full animate-bounce delay-400"></div>
+        </div>
+      </div>
+
+      <!-- Input Field (readonly) -->
+      <div class="flex items-center space-x-2 mt-2 bg-black bg-opacity-40 rounded-lg p-2 sm:p-3 border border-gray-800">
+        <input type="text" placeholder="Type your command..." class="flex-1 bg-transparent text-sm sm:text-base focus:outline-none text-gray-400" readonly>
+        <span class="cursor"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+  </div>
+</section>
+<!-- ============= HERO SECTION END ============= -->
+
+    
+    <!-- ============= ABOUT SECTION START ============= -->
+    <section id="about" class="py-24 bg-gradient-to-b from-transparent via-blue-900 via-opacity-5 to-transparent">
+        <div class="container mx-auto px-6">
+            <div class="grid md:grid-cols-2 gap-16 items-center">
+                <div data-aos="fade-right" data-aos-duration="1000">
+                    <div class="inline-block mb-4 px-4 py-2 bg-violet-500 bg-opacity-10 border border-violet-500 border-opacity-30 rounded-full text-sm font-semibold text-violet-400">
+                        💡 Our Mission
+                    </div>
+                    <h2 class="text-4xl md:text-5xl font-bold mb-6 leading-tight">Your AI Governance Partner in the Decentralized Future</h2>
+                    <p class="text-lg text-gray-400 mb-6 leading-relaxed">
+                      Fluxx represents a paradigm shift in how decentralized autonomous organizations operate. We've built an intelligent system that bridges the gap between the complexity of blockchain governance and the need for efficient, accessible decision-making processes.
+                    </p>
+                    <p class="text-lg text-gray-400 mb-6 leading-relaxed">
+                        Our platform leverages cutting-edge artificial intelligence, natural language processing, and blockchain integration to transform how DAOs manage proposals, communicate with members, and execute governance decisions. Whether you're managing a DeFi protocol, NFT community, or investment DAO, our AI co-pilot adapts to your unique needs.
+                    </p>
+                    <p class="text-lg text-gray-400 mb-8 leading-relaxed">
+                        Built by DAO members, for DAO members. We understand the challenges of decentralized coordination, information overload, and voter apathy. That's why we've created tools that don't just automate processes – they enhance human decision-making with intelligent insights, real-time data analysis, and proactive engagement mechanisms.
+                    </p>
+                    <div class="flex flex-wrap gap-4">
+                        <div class="flex items-center space-x-2 text-blue-400">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span class="font-semibold">Blockchain Native</span>
+                        </div>
+                        <div class="flex items-center space-x-2 text-violet-400">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span class="font-semibold">Privacy First</span>
+                        </div>
+                        <div class="flex items-center space-x-2 text-green-400">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span class="font-semibold">Open Source</span>
+                        </div>
+                    </div>
+                </div>
+                <div data-aos="fade-left" data-aos-duration="1000" data-aos-delay="200">
+                    <div id="aboutLottie" class="w-full h-96"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- ============= ABOUT SECTION END ============= -->
+    
+    <!-- ============= FEATURES SECTION START ============= -->
+<!-- SECTION START: FEATURES -->
+<section id="features" class="py-24 relative overflow-hidden">
+  <!-- subtle gradient glow background -->
+  <div class="absolute inset-0 bg-gradient-to-b from-black via-blue-950/30 to-black opacity-90 -z-10"></div>
+
+  <div class="container mx-auto px-6 relative z-10">
+    <!-- Header -->
+    <div class="text-center mb-20" data-aos="fade-up">
+      <div class="inline-block mb-4 px-4 py-2 bg-blue-500 bg-opacity-10 border border-blue-500 border-opacity-30 rounded-full text-sm font-semibold text-blue-400">
+        <i data-lucide="zap" class="inline-block w-4 h-4 mr-2 text-blue-400"></i>
+        Core Capabilities
+      </div>
+      <h2 class="text-4xl md:text-5xl font-bold mb-6 text-white">
+        Powerful Features for Modern DAOs
+      </h2>
+      <p class="text-gray-400 text-xl max-w-3xl mx-auto leading-relaxed">
+        Everything you need to transform your DAO governance from chaotic to coordinated — from reactive to proactive, and from manual to automated.
+      </p>
+    </div>
+
+    <!-- Main Features Grid -->
+    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+      <!-- Feature Card -->
+      <div class="feature-card p-8 rounded-2xl bg-white/10 backdrop-blur-lg border border-white/10 transition-all duration-500 hover:scale-[1.03] hover:shadow-[0_0_25px_rgba(30,64,175,0.4)]" data-aos="fade-up" data-aos-delay="0">
+        <i data-lucide="file-text" class="w-10 h-10 mb-4 text-blue-400"></i>
+        <h3 class="text-2xl font-bold mb-4 text-white">Smart Proposal Summaries</h3>
+        <p class="text-gray-400 leading-relaxed mb-4">
+          Our AI condenses lengthy DAO proposals into concise, actionable insights. Understand key points, risks, and sentiment in seconds.
+        </p>
+        <ul class="text-sm text-gray-500 space-y-2">
+          <li>• Key points extraction</li>
+          <li>• Risk assessment</li>
+          <li>• Voting recommendation</li>
+          <li>• Historical context</li>
+        </ul>
+      </div>
+
+      <!-- Feature Card -->
+      <div class="feature-card p-8 rounded-2xl bg-white/10 backdrop-blur-lg border border-white/10 transition-all duration-500 hover:scale-[1.03] hover:shadow-[0_0_25px_rgba(30,64,175,0.4)]" data-aos="fade-up" data-aos-delay="100">
+        <i data-lucide="edit-3" class="w-10 h-10 mb-4 text-blue-400"></i>
+        <h3 class="text-2xl font-bold mb-4 text-white">AI Document Drafting</h3>
+        <p class="text-gray-400 leading-relaxed mb-4">
+          Generate governance documents, minutes, and templates with AI precision. Consistency and speed for all DAO operations.
+        </p>
+        <ul class="text-sm text-gray-500 space-y-2">
+          <li>• Proposal templates</li>
+          <li>• Meeting transcripts</li>
+          <li>• Treasury reports</li>
+          <li>• Multi-language support</li>
+        </ul>
+      </div>
+
+      <!-- Feature Card -->
+      <div class="feature-card p-8 rounded-2xl bg-white/10 backdrop-blur-lg border border-white/10 transition-all duration-500 hover:scale-[1.03] hover:shadow-[0_0_25px_rgba(30,64,175,0.4)]" data-aos="fade-up" data-aos-delay="200">
+        <i data-lucide="clock" class="w-10 h-10 mb-4 text-blue-400"></i>
+        <h3 class="text-2xl font-bold mb-4 text-white">Intelligent Reminders</h3>
+        <p class="text-gray-400 leading-relaxed mb-4">
+          Get automated reminders for votes and deadlines — personalized to your DAO roles and priorities.
+        </p>
+        <ul class="text-sm text-gray-500 space-y-2">
+          <li>• Multi-channel alerts</li>
+          <li>• Priority-based notifications</li>
+          <li>• Deadline tracking</li>
+          <li>• Custom schedules</li>
+        </ul>
+      </div>
+
+      <!-- Feature Card -->
+      <div class="feature-card p-8 rounded-2xl bg-white/10 backdrop-blur-lg border border-white/10 transition-all duration-500 hover:scale-[1.03] hover:shadow-[0_0_25px_rgba(30,64,175,0.4)]" data-aos="fade-up" data-aos-delay="300">
+        <i data-lucide="shield" class="w-10 h-10 mb-4 text-blue-400"></i>
+        <h3 class="text-2xl font-bold mb-4 text-white">Wallet-Based Security</h3>
+        <p class="text-gray-400 leading-relaxed mb-4">
+          Web3-native wallet login with decentralized key ownership and zero centralized data storage.
+        </p>
+        <ul class="text-sm text-gray-500 space-y-2">
+          <li>• Multi-sig support</li>
+          <li>• Encrypted storage</li>
+          <li>• Audit trail logging</li>
+          <li>• Zero-knowledge validation</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Additional Row -->
+    <div class="grid md:grid-cols-3 gap-8 mt-12">
+      <div class="feature-card p-8 rounded-2xl bg-white/10 backdrop-blur-lg border border-white/10 transition-all duration-500 hover:scale-[1.03] hover:shadow-[0_0_25px_rgba(30,64,175,0.4)]" data-aos="fade-up" data-aos-delay="400">
+        <i data-lucide="bar-chart-3" class="w-10 h-10 mb-4 text-blue-400"></i>
+        <h3 class="text-xl font-bold mb-3 text-white">Analytics Dashboard</h3>
+        <p class="text-gray-400 leading-relaxed">
+          Get deep insights into governance patterns, engagement rates, and member activity through clean, visual analytics.
+        </p>
+      </div>
+
+      <div class="feature-card p-8 rounded-2xl bg-white/10 backdrop-blur-lg border border-white/10 transition-all duration-500 hover:scale-[1.03] hover:shadow-[0_0_25px_rgba(30,64,175,0.4)]" data-aos="fade-up" data-aos-delay="500">
+        <i data-lucide="link-2" class="w-10 h-10 mb-4 text-blue-400"></i>
+        <h3 class="text-xl font-bold mb-3 text-white">Multi-Platform Integration</h3>
+        <p class="text-gray-400 leading-relaxed">
+          Connect seamlessly to Snapshot, Tally, Discord, and Telegram — one unified command center for DAO activity.
+        </p>
+      </div>
+
+      <div class="feature-card p-8 rounded-2xl bg-white/10 backdrop-blur-lg border border-white/10 transition-all duration-500 hover:scale-[1.03] hover:shadow-[0_0_25px_rgba(30,64,175,0.4)]" data-aos="fade-up" data-aos-delay="600">
+        <i data-lucide="users" class="w-10 h-10 mb-4 text-blue-400"></i>
+        <h3 class="text-xl font-bold mb-3 text-white">Collaboration Tools</h3>
+        <p class="text-gray-400 leading-relaxed">
+          Co-author proposals, discuss in threads, and manage community input in real time with smooth, intuitive collaboration.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    lucide.createIcons();
+  </script>
+</section>
+<!-- SECTION END: FEATURES -->
+
+    <!-- ============= FEATURES SECTION END ============= -->
+    
+    <!-- ============= BENEFITS SECTION START ============= -->
+    <section id="benefits" class="py-24 bg-gradient-to-b from-transparent via-violet-900 via-opacity-5 to-transparent">
+    <div class="container mx-auto px-6">
+        <div class="text-center mb-20" data-aos="fade-up">
+            <div class="inline-block mb-4 px-4 py-2 bg-violet-500 bg-opacity-10 border border-violet-500 border-opacity-30 rounded-full text-sm font-semibold text-violet-400">
+                🎯 Why Choose Us
+            </div>
+            <h2 class="text-4xl md:text-5xl font-bold mb-6">Transform Your DAO Operations</h2>
+            <p class="text-gray-400 text-xl max-w-3xl mx-auto leading-relaxed">
+                Experience measurable improvements in efficiency, engagement, and decision quality
+            </p>
+        </div>
+        
+        <!-- Stats Cards with Glassmorphism -->
+        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+            <div class="stat-card p-8 rounded-2xl text-center bg-white bg-opacity-10 backdrop-blur-md border border-white border-opacity-20" data-aos="zoom-in" data-aos-delay="0">
+                <div class="text-5xl font-bold text-blue-400 mb-2 counter" data-target="85">0</div>
+                <div class="text-xl font-semibold mb-2">85%</div>
+                <div class="text-gray-400 flex justify-center items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c1.657 0 3-1.343 3-3S13.657 2 12 2 9 3.343 9 5s1.343 3 3 3zM12 14v7m0 0H8m4 0h4" />
+                    </svg>
+                    Time Saved on Governance Tasks
+                </div>
+            </div>
+            
+            <div class="stat-card p-8 rounded-2xl text-center bg-white bg-opacity-10 backdrop-blur-md border border-white border-opacity-20" data-aos="zoom-in" data-aos-delay="100">
+                <div class="text-5xl font-bold text-violet-400 mb-2 counter" data-target="3">0</div>
+                <div class="text-xl font-semibold mb-2">3x</div>
+                <div class="text-gray-400 flex justify-center items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h4l3-3 4 4 5-5 4 4" />
+                    </svg>
+                    Increase in Voter Participation
+                </div>
+            </div>
+            
+            <div class="stat-card p-8 rounded-2xl text-center bg-white bg-opacity-10 backdrop-blur-md border border-white border-opacity-20" data-aos="zoom-in" data-aos-delay="200">
+                <div class="text-5xl font-bold text-green-400 mb-2 counter" data-target="92">0</div>
+                <div class="text-xl font-semibold mb-2">92%</div>
+                <div class="text-gray-400 flex justify-center items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    User Satisfaction Rate
+                </div>
+            </div>
+            
+            <div class="stat-card p-8 rounded-2xl text-center bg-white bg-opacity-10 backdrop-blur-md border border-white border-opacity-20" data-aos="zoom-in" data-aos-delay="300">
+                <div class="text-5xl font-bold text-yellow-400 mb-2">24/7</div>
+                <div class="text-xl font-semibold mb-2">Always On</div>
+                <div class="text-gray-400 flex justify-center items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3" />
+                    </svg>
+                    AI-Powered Support
+                </div>
+            </div>
+        </div>
+        
+        <!-- Feature Section -->
+        <div class="grid md:grid-cols-2 gap-12 items-center">
+            <div data-aos="fade-right" data-aos-duration="1000">
+                <h3 class="text-3xl font-bold mb-6">Real Benefits, Real Impact</h3>
+                <div class="space-y-6">
+                    <div class="flex items-start space-x-4">
+                        <div class="w-12 h-12 bg-blue-500 bg-opacity-20 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-semibold mb-2">Faster Decision Making</h4>
+                            <p class="text-gray-400 leading-relaxed">Reduce proposal review time from hours to minutes. Make informed decisions quickly with AI-generated summaries and insights that highlight what matters most.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-start space-x-4">
+                        <div class="w-12 h-12 bg-violet-500 bg-opacity-20 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 17l-5-5m0 0l5-5m-5 5h12" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-semibold mb-2">Higher Engagement</h4>
+                            <p class="text-gray-400 leading-relaxed">Combat voter apathy with personalized reminders and digestible content. See participation rates soar as members stay informed and connected to governance activities.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-start space-x-4">
+                        <div class="w-12 h-12 bg-green-500 bg-opacity-20 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-semibold mb-2">Better Quality Decisions</h4>
+                            <p class="text-gray-400 leading-relaxed">Access historical context, risk analysis, and community sentiment data. Make strategic choices backed by comprehensive information and predictive insights.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-start space-x-4">
+                        <div class="w-12 h-12 bg-yellow-500 bg-opacity-20 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 1.343-3 3 0 .738.336 1.406.878 1.879l-3.487 3.487a2.5 2.5 0 103.536 3.536l3.486-3.486A2.997 2.997 0 1015 11a3 3 0 00-3-3z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-semibold mb-2">Cost Efficiency</h4>
+                            <p class="text-gray-400 leading-relaxed">Eliminate the need for multiple tools and manual processes. Save on operational overhead while scaling your governance capabilities without proportional cost increases.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div data-aos="fade-left" data-aos-duration="1000" data-aos-delay="200">
+                <div id="benefitsLottie" class="w-full h-96"></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+    <!-- ============= BENEFITS SECTION END ============= -->
+    
+<!-- ============= DEMO SECTION START ============= -->
+<section id="demo" class="py-16 sm:py-24">
+  <div class="container mx-auto px-4 sm:px-6 lg:px-8 max-w-5xl">
+    
+    <!-- Header -->
+    <div class="text-center mb-12 sm:mb-16" data-aos="fade-up">
+      <div class="inline-block mb-4 px-4 py-2 bg-blue-500 bg-opacity-10 border border-blue-500 border-opacity-30 rounded-full text-sm font-semibold text-blue-400">
+        🎮 Interactive Demo
+      </div>
+      <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6">
+        Try AI Co-Pilot Now
+      </h2>
+      <p class="text-gray-400 text-base sm:text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">
+        Experience the power of AI-driven governance firsthand. Ask anything about DAO operations, proposal analysis, or governance best practices.
+      </p>
+    </div>
+
+    <!-- Chat container -->
+    <div class="glass-container p-6 sm:p-8 md:p-12 glow-violet" data-aos="fade-up" data-aos-delay="200">
+      
+      <!-- Chat messages -->
+      <div id="chatMessages" class="space-y-4 mb-6 sm:mb-8 min-h-[250px] sm:min-h-[300px] max-h-[400px] sm:max-h-[500px] overflow-y-auto">
+        <div class="chat-bubble text-gray-400 bg-black bg-opacity-30 border border-gray-700 p-4 rounded-xl">
+          <p><strong class="text-blue-400 text-lg">AI Co-Pilot:</strong> Hello! I'm your intelligent governance assistant powered by advanced AI. I can help you with:</p>
+          <ul class="mt-2 ml-4 space-y-1 sm:space-y-2 text-sm sm:text-base">
+            <li>• Summarizing complex DAO proposals</li>
+            <li>• Drafting governance documents</li>
+            <li>• Analyzing voting patterns and trends</li>
+            <li>• Explaining blockchain governance concepts</li>
+            <li>• Providing strategic recommendations</li>
+          </ul>
+          <p class="mt-2 sm:mt-3">What would you like to know?</p>
+        </div>
+      </div>
+
+      <!-- Typing indicator -->
+      <div id="typingIndicator" class="hidden chat-bubble mb-4 p-4 rounded-xl bg-black bg-opacity-30 border border-gray-700">
+        <div class="flex items-center space-x-2 sm:space-x-3">
+          <div id="demoLottie" class="w-8 h-8 sm:w-10 sm:h-10"></div>
+          <span class="text-gray-400 text-sm sm:text-base">AI is analyzing your request</span>
+          <div class="loading-dots flex space-x-1">
+            <div class="loading-dot w-2 h-2 rounded-full bg-gray-400 animate-bounce"></div>
+            <div class="loading-dot w-2 h-2 rounded-full bg-gray-400 animate-bounce delay-150"></div>
+            <div class="loading-dot w-2 h-2 rounded-full bg-gray-400 animate-bounce delay-300"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Input & button -->
+      <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
+        <input 
+          type="text" 
+          id="chatInput" 
+          placeholder="Ask Co-Pilot anything about DAO governance..." 
+          class="flex-1 bg-black bg-opacity-50 border border-gray-700 rounded-xl px-4 py-3 sm:px-6 sm:py-4 text-base sm:text-lg focus:outline-none focus:border-blue-500 transition-all"
+        >
+        <button 
+          id="sendChatBtn" 
+          class="btn-primary px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-semibold text-base sm:text-lg"
+        >
+          Send
+        </button>
+      </div>
+
+      <!-- Demo suggestion buttons -->
+      <div class="mt-4 sm:mt-6 flex flex-wrap gap-2 sm:gap-3">
+        <button class="demo-suggestion px-3 sm:px-4 py-2 sm:py-2.5 bg-blue-500 bg-opacity-10 border border-blue-500 border-opacity-30 rounded-lg text-xs sm:text-sm hover:bg-opacity-20 transition">
+          Summarize proposal #42
+        </button>
+        <button class="demo-suggestion px-3 sm:px-4 py-2 sm:py-2.5 bg-violet-500 bg-opacity-10 border border-violet-500 border-opacity-30 rounded-lg text-xs sm:text-sm hover:bg-opacity-20 transition">
+          How to increase voter turnout?
+        </button>
+        <button class="demo-suggestion px-3 sm:px-4 py-2 sm:py-2.5 bg-green-500 bg-opacity-10 border border-green-500 border-opacity-30 rounded-lg text-xs sm:text-sm hover:bg-opacity-20 transition">
+          Draft a treasury report
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- ============= DEMO SECTION END ============= -->
+
+    <!-- ============= DEMO SECTION END ============= -->
+    
+    <!-- ============= TESTIMONIALS SECTION START ============= -->
+    <section id="testimonials" class="py-24 bg-gradient-to-b from-transparent via-blue-900 via-opacity-5 to-transparent">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-20" data-aos="fade-up">
+                <div class="inline-block mb-4 px-4 py-2 bg-green-500 bg-opacity-10 border border-green-500 border-opacity-30 rounded-full text-sm font-semibold text-green-400">
+                    💬 What DAOs Say
+                </div>
+                <h2 class="text-4xl md:text-5xl font-bold mb-6">Trusted by Leading DAOs</h2>
+                <p class="text-gray-400 text-xl max-w-3xl mx-auto leading-relaxed">
+                    See how organizations worldwide are transforming their governance with AI DAO Co-Pilot
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="testimonial-card p-8 rounded-2xl" data-aos="fade-up" data-aos-delay="0">
+                    <div class="flex items-center mb-6">
+                        <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-violet-500 rounded-full flex items-center justify-center text-2xl font-bold mr-4">
+                            A
+                        </div>
+                        <div>
+                            <div class="font-bold text-lg">Alex Chen</div>
+                            <div class="text-sm text-gray-500">DAO Operations Lead</div>
+                            <div class="text-xs text-gray-600">DeFi Protocol DAO</div>
+                        </div>
+                    </div>
+                    <p class="text-gray-400 leading-relaxed mb-4">
+                        "AI DAO Co-Pilot completely transformed how our community engages with proposals. We went from 35% to 87% participation in just two months. The AI summaries are incredibly accurate and save our members hours of reading."
+                    </p>
+                    <div class="flex text-yellow-400">
+                        ⭐⭐⭐⭐⭐
+                    </div>
+                </div>
+                
+                <div class="testimonial-card p-8 rounded-2xl" data-aos="fade-up" data-aos-delay="100">
+                    <div class="flex items-center mb-6">
+                        <div class="w-16 h-16 bg-gradient-to-br from-violet-500 to-pink-500 rounded-full flex items-center justify-center text-2xl font-bold mr-4">
+                            S
+                        </div>
+                        <div>
+                            <div class="font-bold text-lg">Sarah Williams</div>
+                            <div class="text-sm text-gray-500">Governance Coordinator</div>
+                            <div class="text-xs text-gray-600">NFT Community DAO</div>
+                        </div>
+                    </div>
+                    <p class="text-gray-400 leading-relaxed mb-4">
+                        "The document drafting feature is a game-changer. What used to take us 3-4 hours now takes 15 minutes. The AI understands our DAO's voice and maintains consistency across all our governance materials. Absolutely essential tool."
+                    </p>
+                    <div class="flex text-yellow-400">
+                        ⭐⭐⭐⭐⭐
+                    </div>
+                </div>
+                
+                <div class="testimonial-card p-8 rounded-2xl" data-aos="fade-up" data-aos-delay="200">
+                    <div class="flex items-center mb-6">
+                        <div class="w-16 h-16 bg-gradient-to-br from-green-500 to-blue-500 rounded-full flex items-center justify-center text-2xl font-bold mr-4">
+                            M
+                        </div>
+                        <div>
+                            <div class="font-bold text-lg">Marcus Rodriguez</div>
+                            <div class="text-sm text-gray-500">Treasury Manager</div>
+                            <div class="text-xs text-gray-600">Investment DAO</div>
+                        </div>
+                    </div>
+                    <p class="text-gray-400 leading-relaxed mb-4">
+                        "Managing a $50M treasury requires precise coordination. AI Co-Pilot's analytics and reminder system ensures we never miss critical votes. The risk assessment feature has helped us avoid several potentially costly decisions."
+                    </p>
+                    <div class="flex text-yellow-400">
+                        ⭐⭐⭐⭐⭐
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- ============= TESTIMONIALS SECTION END ============= -->
+<!-- ============= ARCHITECTURE SECTION START ============= -->
+<section id="architecture" class="py-24">
+    <div class="container mx-auto px-6">
+        <div class="text-center mb-20" data-aos="fade-up">
+            <div class="inline-flex items-center mb-4 px-4 py-2 bg-violet-500 bg-opacity-10 border border-violet-500 border-opacity-30 rounded-full text-sm font-semibold text-violet-400 gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 22l3-3-3-3zm4.5 0l-.75 5 3-3-3-3zM12 3v6m0 0l3-3-3-3-3 3 3 3z" />
+                </svg>
+                How It Works
+            </div>
+            <h2 class="text-4xl md:text-5xl font-bold mb-6">Seamless Integration, Powerful Results</h2>
+            <p class="text-gray-400 text-xl max-w-3xl mx-auto leading-relaxed">
+                From wallet connection to intelligent insights – our streamlined process makes DAO governance effortless
+            </p>
+        </div>
+        
+        <!-- Timeline Steps -->
+        <div class="grid md:grid-cols-4 gap-8 mb-16">
+            <div class="timeline-step text-center relative" data-aos="fade-up" data-aos-delay="0">
+                <div class="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-6 glow-blue">
+                    1
+                </div>
+                <h3 class="text-2xl font-bold mb-3">Connect Wallet</h3>
+                <p class="text-gray-400 leading-relaxed">
+                    Securely authenticate using your preferred Web3 wallet. Support for MetaMask, WalletConnect, Coinbase Wallet, and more. No passwords, no centralized accounts.
+                </p>
+            </div>
+            
+            <div class="timeline-step text-center relative" data-aos="fade-up" data-aos-delay="100">
+                <div class="w-20 h-20 bg-gradient-to-br from-violet-500 to-violet-600 rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-6 glow-violet">
+                    2
+                </div>
+                <h3 class="text-2xl font-bold mb-3">Link Your DAO</h3>
+                <p class="text-gray-400 leading-relaxed">
+                    Connect to your organization's governance platform. We integrate with Snapshot, Tally, Aragon, Colony, and custom DAO frameworks. One-click setup process.
+                </p>
+            </div>
+            
+            <div class="timeline-step text-center relative" data-aos="fade-up" data-aos-delay="200">
+                <div class="w-20 h-20 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-6">
+                    3
+                </div>
+                <h3 class="text-2xl font-bold mb-3">AI Processing</h3>
+                <p class="text-gray-400 leading-relaxed">
+                    Our advanced AI engine analyzes proposals, generates summaries, assesses risks, and creates actionable insights using natural language processing and machine learning.
+                </p>
+            </div>
+            
+            <div class="timeline-step text-center relative" data-aos="fade-up" data-aos-delay="300">
+                <div class="w-20 h-20 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-6">
+                    4
+                </div>
+                <h3 class="text-2xl font-bold mb-3">Get Results</h3>
+                <p class="text-gray-400 leading-relaxed">
+                    Receive comprehensive summaries, intelligent reminders, strategic recommendations, and real-time notifications. Stay informed, stay engaged, govern smarter.
+                </p>
+            </div>
+        </div>
+        
+        <!-- Glassmorphism Features -->
+        <div class="glass-container p-12 text-center rounded-2xl bg-white bg-opacity-10 backdrop-blur-md border border-white border-opacity-20" data-aos="zoom-in">
+            <h3 class="text-3xl font-bold mb-6">Built on Cutting-Edge Technology</h3>
+            <div class="grid md:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <div class="text-4xl mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 mx-auto text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m-6-8h6M4 6h16M4 18h16" />
+                        </svg>
+                    </div>
+                    <div class="font-bold mb-2">GPT-4 Powered</div>
+                    <div class="text-sm text-gray-500">Advanced language models</div>
+                </div>
+                <div>
+                    <div class="text-4xl mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 mx-auto text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                    </div>
+                    <div class="font-bold mb-2">Multi-Chain</div>
+                    <div class="text-sm text-gray-500">Ethereum, Polygon, Arbitrum+</div>
+                </div>
+                <div>
+                    <div class="text-4xl mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 mx-auto text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0-1.657 1.343-3 3-3h3v6h-3c-1.657 0-3-1.343-3-3zM4 12a8 8 0 1116 0 8 8 0 01-16 0z" />
+                        </svg>
+                    </div>
+                    <div class="font-bold mb-2">Zero-Knowledge</div>
+                    <div class="text-sm text-gray-500">Privacy-preserving architecture</div>
+                </div>
+                <div>
+                    <div class="text-4xl mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 mx-auto text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                    </div>
+                    <div class="font-bold mb-2">Real-Time</div>
+                    <div class="text-sm text-gray-500">Sub-second response times</div>
+                </div>
+            </div>
+            <p class="text-gray-400 text-lg max-w-3xl mx-auto leading-relaxed">
+                We combine the latest advances in artificial intelligence, blockchain technology, and distributed systems to deliver a governance platform that's fast, secure, and intelligent. Our infrastructure scales seamlessly from small community DAOs to enterprise-level organizations.
+            </p>
+        </div>
+    </div>
+</section>
+
+    <!-- ============= ARCHITECTURE SECTION END ============= -->
+    <!-- ============= ROADMAP SECTION START ============= -->
+<section id="roadmap" class="py-24 bg-gradient-to-b from-transparent via-violet-900 via-opacity-5 to-transparent">
+    <div class="container mx-auto px-6">
+        <div class="text-center mb-20" data-aos="fade-up">
+            <div class="inline-flex items-center mb-4 px-4 py-2 bg-blue-500 bg-opacity-10 border border-blue-500 border-opacity-30 rounded-full text-sm font-semibold text-blue-400 gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6h13M5 6h.01M12 6v13" />
+                </svg>
+                Product Roadmap
+            </div>
+            <h2 class="text-4xl md:text-5xl font-bold mb-6">Our Vision for the Future</h2>
+            <p class="text-gray-400 text-xl max-w-3xl mx-auto leading-relaxed">
+                See what's coming next as we continue to innovate and expand the capabilities of AI DAO Co-Pilot
+            </p>
+        </div>
+        
+        <div class="max-w-4xl mx-auto space-y-8">
+            <!-- LIVE -->
+            <div class="glass-container p-8 border-l-4 border-green-500 rounded-2xl bg-white bg-opacity-10 backdrop-blur-md border border-white border-opacity-20" data-aos="fade-right" data-aos-delay="0">
+                <div class="flex items-center mb-4">
+                    <span class="px-4 py-1 bg-green-500 text-sm font-bold rounded-full mr-4 flex items-center gap-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        LIVE
+                    </span>
+                    <h3 class="text-2xl font-bold">Q4 2024 - Foundation</h3>
+                </div>
+                <ul class="text-gray-400 space-y-2 ml-6">
+                    <li>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline mr-2 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        Core AI proposal summarization engine
+                    </li>
+                    <li>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline mr-2 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        Wallet-based authentication system
+                    </li>
+                    <li>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline mr-2 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        Integration with Snapshot and Tally
+                    </li>
+                    <li>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline mr-2 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        Basic reminder and notification system
+                    </li>
+                    <li>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline mr-2 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        Document drafting templates
+                    </li>
+                </ul>
+            </div>
+            
+            <!-- IN PROGRESS -->
+            <div class="glass-container p-8 border-l-4 border-blue-500 rounded-2xl bg-white bg-opacity-10 backdrop-blur-md border border-white border-opacity-20" data-aos="fade-right" data-aos-delay="100">
+                <div class="flex items-center mb-4">
+                    <span class="px-4 py-1 bg-blue-500 text-sm font-bold rounded-full mr-4 flex items-center gap-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v6h6M20 20v-6h-6" />
+                        </svg>
+                        IN PROGRESS
+                    </span>
+                    <h3 class="text-2xl font-bold">Q1 2025 - Enhanced Intelligence</h3>
+                </div>
+                <ul class="text-gray-400 space-y-2 ml-6">
+                    <li>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline mr-2 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m2 0h1v4h-1m-2-4v4" />
+                        </svg>
+                        Advanced sentiment analysis and prediction models
+                    </li>
+                    <li>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline mr-2 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                        Multi-language support (10+ languages)
+                    </li>
+                    <li>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline mr-2 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v8m4-4H8" />
+                        </svg>
+                        Custom AI training on your DAO's history
+                    </li>
+                    <li>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline mr-2 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h10M7 16h10" />
+                        </svg>
+                        Mobile app (iOS & Android)
+                    </li>
+                    <li>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline mr-2 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
+                        </svg>
+                        Integration with Discord and Telegram bots
+                    </li>
+                </ul>
+            </div>
+            
+            <!-- PLANNED -->
+            <div class="glass-container p-8 border-l-4 border-violet-500 rounded-2xl bg-white bg-opacity-10 backdrop-blur-md border border-white border-opacity-20" data-aos="fade-right" data-aos-delay="200">
+                <div class="flex items-center mb-4">
+                    <span class="px-4 py-1 bg-violet-500 text-sm font-bold rounded-full mr-4 flex items-center gap-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        PLANNED
+                    </span>
+                    <h3 class="text-2xl font-bold">Q2 2025 - Enterprise Features</h3>
+                </div>
+                <ul class="text-gray-400 space-y-2 ml-6">
+                    <li>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline mr-2 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m-6-8h6" />
+                        </svg>
+                        Advanced analytics dashboard with predictive insights
+                    </li>
+                    <li>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline mr-2 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        Automated voting strategies and delegation
+                    </li>
+                    <li>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline mr-2 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h18M3 12h18M3 17h18" />
+                        </svg>
+                        Cross-DAO collaboration tools
+                    </li>
+                    <li>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline mr-2 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        White-label solutions for enterprise DAOs
+                    </li>
+                    <li>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline mr-2 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v8m4-4H8" />
+                        </svg>
+                        API access for developers
+                    </li>
+                </ul>
+            </div>
+            
+            <!-- FUTURE -->
+            <div class="glass-container p-8 border-l-4 border-yellow-500 rounded-2xl bg-white bg-opacity-10 backdrop-blur-md border border-white border-opacity-20" data-aos="fade-right" data-aos-delay="300">
+                <div class="flex items-center mb-4">
+                    <span class="px-4 py-1 bg-yellow-500 text-black text-sm font-bold rounded-full mr-4 flex items-center gap-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 1.343-3 3 0 1.657 1.343 3 3 3s3-1.343 3-3-1.343-3-3-3zM12 14v6" />
+                        </svg>
+                        FUTURE
+                    </span>
+                    <h3 class="text-2xl font-bold">Q3 2025+ - Ecosystem Expansion</h3>
+                </div>
+                <ul class="text-gray-400 space-y-2 ml-6">
+                    <li>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline mr-2 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        AI-powered proposal creation from natural language
+                    </li>
+                    <li>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline mr-2 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 21v-2a4 4 0 00-3-3.87M4 7v2a4 4 0 003 3.87" />
+                        </svg>
+                        Decentralized AI inference network
+                    </li>
+                    <li>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline mr-2 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h8m-8 4h8M8 8h8" />
+                        </svg>
+                        DAO-to-DAO negotiation and partnership tools
+                    </li>
+                    <li>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline mr-2 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c0 1.657 1.343 3 3 3s3-1.343 3-3-1.343-3-3-3-3 1.343-3 3z" />
+                        </svg>
+                        On-chain reputation and contribution tracking
+                    </li>
+                    <li>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline mr-2 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16M8 12h8" />
+                        </svg>
+                        Governance token optimization recommendations
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- ============= ROADMAP SECTION END ============= -->
+
+    
+ <!-- ============= FAQ SECTION START ============= -->
+<section id="faq" class="py-24">
+    <div class="container mx-auto px-6 max-w-4xl">
+        <div class="text-center mb-20" data-aos="fade-up">
+            <div class="inline-flex items-center mb-4 px-4 py-2 bg-green-500 bg-opacity-10 border border-green-500 border-opacity-30 rounded-full text-sm font-semibold text-green-400 gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M12 14v2m0 4h.01M12 2a10 10 0 110 20 10 10 0 010-20z" />
+                </svg>
+                Frequently Asked Questions
+            </div>
+            <h2 class="text-4xl md:text-5xl font-bold mb-6">Got Questions? We've Got Answers</h2>
+            <p class="text-gray-400 text-xl max-w-2xl mx-auto leading-relaxed">
+                Everything you need to know about AI DAO Co-Pilot
+            </p>
+        </div>
+        
+        <div class="space-y-6">
+            <div class="glass-container p-8 rounded-2xl bg-white bg-opacity-10 backdrop-blur-md border border-white border-opacity-20" data-aos="fade-up" data-aos-delay="0">
+                <h3 class="text-xl font-bold mb-3 gradient-text">What types of DAOs can use AI Co-Pilot?</h3>
+                <p class="text-gray-400 leading-relaxed">
+                    AI DAO Co-Pilot is designed to work with all types of decentralized organizations including DeFi protocols, NFT communities, investment DAOs, social DAOs, gaming guilds, and enterprise DAOs. Our platform integrates with popular governance frameworks like Snapshot, Tally, Aragon, and Colony, making it compatible with most existing DAO infrastructures. Whether you're a small community of 50 members or a large protocol with thousands of stakeholders, our system scales to meet your needs.
+                </p>
+            </div>
+            
+            <div class="glass-container p-8 rounded-2xl bg-white bg-opacity-10 backdrop-blur-md border border-white border-opacity-20" data-aos="fade-up" data-aos-delay="100">
+                <h3 class="text-xl font-bold mb-3 gradient-text">How accurate are the AI-generated summaries?</h3>
+                <p class="text-gray-400 leading-relaxed">
+                    Our AI models achieve 95%+ accuracy in proposal summarization, validated through extensive testing with real DAO proposals. We use advanced natural language processing powered by GPT-4 and custom-trained models specific to blockchain governance terminology. Each summary includes confidence scores, key points extraction, risk assessment, and sentiment analysis. For critical proposals, we recommend members review the full text alongside our AI summary for complete context.
+                </p>
+            </div>
+            
+            <div class="glass-container p-8 rounded-2xl bg-white bg-opacity-10 backdrop-blur-md border border-white border-opacity-20" data-aos="fade-up" data-aos-delay="200">
+                <h3 class="text-xl font-bold mb-3 gradient-text">Is my data secure and private?</h3>
+                <p class="text-gray-400 leading-relaxed">
+                    Absolutely. We built AI DAO Co-Pilot with privacy and security as core principles. We use wallet-based authentication with zero-knowledge architecture, meaning we never store your private keys or sensitive wallet information. All data processing happens through encrypted channels, and we employ industry-standard security practices including regular audits, penetration testing, and compliance with Web3 security standards. Your governance data remains under your control at all times.
+                </p>
+            </div>
+            
+            <div class="glass-container p-8 rounded-2xl bg-white bg-opacity-10 backdrop-blur-md border border-white border-opacity-20" data-aos="fade-up" data-aos-delay="300">
+                <h3 class="text-xl font-bold mb-3 gradient-text">What are the pricing and subscription options?</h3>
+                <p class="text-gray-400 leading-relaxed">
+                    We offer flexible pricing tiers to accommodate DAOs of all sizes. Our Free tier includes basic proposal summaries and reminders for communities up to 100 members. Pro tier ($99/month) adds advanced analytics, custom AI training, and unlimited members. Enterprise tier (custom pricing) includes white-label options, dedicated support, API access, and SLA guarantees. All plans include a 14-day free trial with no credit card required.
+                </p>
+            </div>
+            
+            <div class="glass-container p-8 rounded-2xl bg-white bg-opacity-10 backdrop-blur-md border border-white border-opacity-20" data-aos="fade-up" data-aos-delay="400">
+                <h3 class="text-xl font-bold mb-3 gradient-text">Can I integrate AI Co-Pilot with our existing tools?</h3>
+                <p class="text-gray-400 leading-relaxed">
+                    Yes! We provide extensive integration capabilities with popular DAO tools and communication platforms. Our platform connects seamlessly with Discord, Telegram, Slack, Notion, and major governance platforms. We offer webhooks, REST API endpoints, and SDK libraries for custom integrations. Our documentation includes detailed guides and code examples to help your team integrate AI Co-Pilot into your existing workflows within minutes.
+                </p>
+            </div>
+            
+            <div class="glass-container p-8 rounded-2xl bg-white bg-opacity-10 backdrop-blur-md border border-white border-opacity-20" data-aos="fade-up" data-aos-delay="500">
+                <h3 class="text-xl font-bold mb-3 gradient-text">How do I get started?</h3>
+                <p class="text-gray-400 leading-relaxed">
+                    Getting started is simple and takes less than 5 minutes. Click "Connect Wallet" to authenticate with your Web3 wallet, select your DAO from our list of integrated platforms (or provide your DAO's governance contract address), configure your notification preferences, and you're ready to go! Our onboarding wizard guides you through each step, and our support team is available 24/7 to help with any questions.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+    <!-- ============= FAQ SECTION END ============= -->
+    
+    <!-- ============= CTA SECTION START ============= -->
+    <section id="cta" class="py-32 relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-r from-blue-600 via-violet-600 to-blue-600 opacity-10"></div>
+        <div class="container mx-auto px-6 text-center relative z-10">
+            <div data-aos="zoom-in" data-aos-duration="1000">
+           <div class="max-w-4xl mx-auto text-center">
+    <div id="ctaLottie" class="w-32 h-32 mx-auto mb-8"></div>
+    <h2 class="text-5xl md:text-6xl font-bold mb-8 text-glow leading-tight">
+        Ready to Transform Your DAO Governance?
+    </h2>
+    <p class="text-xl md:text-2xl text-gray-400 mb-12 leading-relaxed max-w-3xl mx-auto">
+        Join hundreds of forward-thinking DAOs already using AI Co-Pilot to make smarter decisions, engage their communities, and scale their governance processes. Start your free trial today – no credit card required.
+    </p>
+    <div class="flex flex-wrap gap-6 justify-center mb-12">
+        <!-- Launch Beta Button -->
+        <button id="launchBetaBtn" class="btn-primary px-12 py-5 rounded-full font-bold text-xl flex items-center gap-2 glass-hover">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2l3 7H9l3-7zM9 15h6l-3 7-3-7z" />
+            </svg>
+            Launch Beta Access
+        </button>
+
+        <!-- Try Demo Button -->
+        <a href="#demo" class="btn-secondary px-12 py-5 rounded-full font-bold text-xl inline-flex items-center gap-2 glass-hover">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-6.522-3.764A1 1 0 007 8.236v7.528a1 1 0 001.23.964l6.522-1.882a1 1 0 000-1.848z" />
+            </svg>
+            Try Demo First
+        </a>
+    </div>
+
+    <!-- Feature Highlights -->
+    <div class="flex items-center justify-center space-x-8 text-gray-500 flex-wrap gap-4">
+        <div class="flex items-center space-x-2">
+            <svg class="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+            </svg>
+            <span>No credit card</span>
+        </div>
+        <div class="flex items-center space-x-2">
+            <svg class="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+            </svg>
+            <span>14-day free trial</span>
+        </div>
+        <div class="flex items-center space-x-2">
+            <svg class="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+            </svg>
+            <span>Cancel anytime</span>
+        </div>
+    </div>
+</div>
+            </div>
+        </div>
+    </section>
+    <!-- ============= CTA SECTION END ============= -->
+    
+    <!-- ============= FOOTER START ============= -->
+    <footer class="border-t border-gray-800 py-16">
+        <div class="container mx-auto px-6">
+            <div class="grid md:grid-cols-4 gap-12 mb-12">
+                <div>
+                        <div class="flex items-center gap-2 text-2xl font-bold gradient-text cursor-pointer select-none">
+  <img 
+    src="/Gemini_Generated_Image_s3shnps3shnps3sh (1).png" 
+    alt="AI DAO Co-Pilot logo" 
+    class="w-8 h-8 object-contain" 
+    loading="eager"
+    decoding="async"
+  />
+  <span>Fluxx</span>
+</div>
+                    <p class="text-gray-500 leading-relaxed mb-4">
+                        Revolutionizing DAO governance with artificial intelligence. Making decentralized decision-making smarter, faster, and more accessible.
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-500 hover:text-blue-400 transition">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/></svg>
+                        </a>
+                        <a href="#" class="text-gray-500 hover:text-blue-400 transition">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                        </a>
+                        <a href="#" class="text-gray-500 hover:text-blue-400 transition">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2c5.514 0 10 4.486 10 10s-4.486 10-10 10-10-4.486-10-10 4.486-10 10-10zm0-2c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm-2 10h-2v2h2v6h3v-6h1.82l.18-2h-2v-.833c0-.478.096-.667.558-.667h1.442v-2.5h-2.404c-1.798 0-2.596.792-2.596 2.308v1.692z"/></svg>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="font-bold text-lg mb-4">Product</h3>
+                    <ul class="space-y-2 text-gray-500">
+                        <li><a href="#features" class="hover:text-blue-400 transition">Features</a></li>
+                        <li><a href="#demo" class="hover:text-blue-400 transition">Demo</a></li>
+                        <li><a href="#roadmap" class="hover:text-blue-400 transition">Roadmap</a></li>
+                        <li><a href="#" class="hover:text-blue-400 transition">Pricing</a></li>
+                        <li><a href="#" class="hover:text-blue-400 transition">Changelog</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="font-bold text-lg mb-4">Resources</h3>
+                    <ul class="space-y-2 text-gray-500">
+                        <li><a href="#" class="hover:text-blue-400 transition">Documentation</a></li>
+                        <li><a href="#" class="hover:text-blue-400 transition">API Reference</a></li>
+                        <li><a href="#" class="hover:text-blue-400 transition">Blog</a></li>
+                        <li><a href="#" class="hover:text-blue-400 transition">Case Studies</a></li>
+                        <li><a href="#" class="hover:text-blue-400 transition">Help Center</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="font-bold text-lg mb-4">Community</h3>
+                    <ul class="space-y-2 text-gray-500">
+                        <li><a href="#" class="hover:text-blue-400 transition">Discord</a></li>
+                        <li><a href="https://t.me/xemplary_prodigy" class="hover:text-blue-400 transition">Telegram</a></li>
+                        <li><a href="https://github.com/Xconmax245" class="hover:text-blue-400 transition">GitHub</a></li>
+                        <li><a href="https://x.com?xcon_max?s=21" class="hover:text-blue-400 transition">Twitter</a></li>
+                        <li><a href="https://seedify.fund/" class="hover:text-blue-400 transition">Seedify Launchpad</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 pt-8 flex flex-wrap justify-between items-center">
+                <div class="text-gray-500 mb-4 md:mb-0">
+                    © 2025 AI DAO Co-Pilot. Built for the future of decentralized governance.
+                </div>
+                <div class="flex space-x-6 text-gray-500">
+                    <a href="#" class="hover:text-blue-400 transition">Privacy Policy</a>
+                    <a href="#" class="hover:text-blue-400 transition">Terms of Service</a>
+                    <a href="#" class="hover:text-blue-400 transition">Cookie Policy</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <!-- ============= FOOTER END ============= -->
+     
+ <script>
+/* =========================================================
+   INITIALIZATION
+========================================================= */
+document.addEventListener("DOMContentLoaded", function () {
+  AOS.init({
+    duration: 1000,
+    once: true,
+    offset: 100,
+    easing: "ease-out-cubic",
+  });
+
+  initHeaderScroll();
+  initMobileMenu();
+  initCounters();
+  initWalletSystem();
+  initChatDemo();
+  initDemoSuggestions();
+  initAnimations();
+});
+
+/* =========================================================
+   HEADER SCROLL
+========================================================= */
+function initHeaderScroll() {
+  const header = document.getElementById("header");
+  window.addEventListener("scroll", function () {
+    header.classList.toggle("scrolled", window.scrollY > 50);
+  });
+}
+
+/* =========================================================
+   MOBILE MENU
+========================================================= */
+function initMobileMenu() {
+  const btn = document.getElementById("mobileMenuBtn");
+  const menu = document.getElementById("mobileMenu");
+  const close = document.getElementById("closeMobileMenu");
+
+  btn?.addEventListener("click", () => menu.classList.add("active"));
+  close?.addEventListener("click", () => menu.classList.remove("active"));
+  menu?.querySelectorAll("a").forEach((link) =>
+    link.addEventListener("click", () => menu.classList.remove("active"))
+  );
+}
+
+/* =========================================================
+   COUNTER ANIMATION
+========================================================= */
+function initCounters() {
+  const counters = document.querySelectorAll(".counter");
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const el = entry.target;
+          const target = +el.dataset.target;
+          const increment = target / 200;
+          const update = () => {
+            const count = +el.innerText;
+            if (count < target) {
+              el.innerText = Math.ceil(count + increment);
+              setTimeout(update, 10);
+            } else {
+              el.innerText = target;
+            }
+          };
+          update();
+          observer.unobserve(el);
+        }
+      });
+    },
+    { threshold: 0.5 }
+  );
+  counters.forEach((c) => observer.observe(c));
+}
+
+/* =========================================================
+   WALLET SYSTEM (MetaMask)
+========================================================= */
+async function initWalletSystem() {
+  const connectBtn = document.getElementById("connectWalletBtn");
+  const disconnectBtn = document.getElementById("disconnectWalletBtn");
+  const walletDisplay = document.getElementById("walletDisplay");
+  const walletName = document.getElementById("walletName");
+
+  lucide.createIcons();
+
+  let savedWallet = await localforage.getItem("connectedWallet");
+  if (savedWallet && typeof savedWallet === "string") {
+    showConnectedUI(savedWallet);
+  } else {
+    showDisconnectedUI();
+  }
+
+  connectBtn.addEventListener("click", async () => {
+    if (!window.ethereum) {
+      Swal.fire({
+        icon: "error",
+        title: "No Wallet Detected",
+        html: `Install <a href="https://metamask.io" target="_blank" class="text-blue-400 underline">MetaMask</a> to connect.`,
+        background: "#0a0a0a",
+        color: "#f3f4f6",
+        confirmButtonColor: "#3B82F6",
+      });
+      return;
+    }
+
+    try {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      await provider.send("eth_requestAccounts", []);
+      const signer = provider.getSigner();
+      const address = await signer.getAddress();
+
+      await localforage.setItem("connectedWallet", address);
+      showConnectedUI(address);
+
+      Swal.fire({
+        icon: "success",
+        title: "Wallet Connected",
+        html: `Connected to <strong>${shortAddr(address)}</strong>`,
+        background: "#0a0a0a",
+        color: "#f3f4f6",
+        confirmButtonColor: "#3B82F6",
+        timer: 2500,
+        timerProgressBar: true,
+      });
+    } catch (err) {
+      console.error(err);
+      Swal.fire({
+        icon: "error",
+        title: "Connection Failed",
+        text: err.message || "Please try again.",
+        background: "#0a0a0a",
+        color: "#f3f4f6",
+      });
+    }
+  });
+
+  disconnectBtn.addEventListener("click", async () => {
+    await localforage.removeItem("connectedWallet");
+    showDisconnectedUI();
+    Swal.fire({
+      icon: "info",
+      title: "Wallet Disconnected",
+      background: "#0a0a0a",
+      color: "#f3f4f6",
+      confirmButtonColor: "#3B82F6",
+      timer: 2000,
+      timerProgressBar: true,
+    });
+  });
+
+  function showConnectedUI(address) {
+    walletName.textContent = shortAddr(address);
+    connectBtn.classList.add("hidden");
+    walletDisplay.classList.remove("hidden");
+    walletDisplay.classList.add("flex");
+  }
+
+  function showDisconnectedUI() {
+    walletDisplay.classList.add("hidden");
+    connectBtn.classList.remove("hidden");
+  }
+
+  function shortAddr(addr) {
+    return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
+  }
+
+  if (window.ethereum) {
+    window.ethereum.on("accountsChanged", async (accounts) => {
+      if (accounts.length === 0) {
+        await localforage.removeItem("connectedWallet");
+        showDisconnectedUI();
+      } else {
+        await localforage.setItem("connectedWallet", accounts[0]);
+        showConnectedUI(accounts[0]);
+      }
+    });
+    window.ethereum.on("chainChanged", () => window.location.reload());
+  }
+}
+
+/* =========================================================
+   CHAT DEMO (AI Co-Pilot)
+========================================================= */
+// script.js
+const chatInput = document.getElementById("chatInput");
+const sendBtn = document.getElementById("sendChatBtn");
+const chatMessages = document.getElementById("chatMessages");
+const typingIndicator = document.getElementById("typingIndicator");
+
+// Add a message to the chat
+function addMessage(sender, text, type = "ai") {
+  const bubble = document.createElement("div");
+  bubble.className = `chat-bubble p-4 rounded-xl ${type === "ai" ? "text-blue-400 bg-black bg-opacity-30 border border-gray-700" : "text-green-400 text-right"}`;
+  bubble.innerHTML = `<strong>${sender}:</strong> ${text}`;
+  chatMessages.appendChild(bubble);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+// Send message to backend
+async function sendMessage() {
+  const userMessage = chatInput.value.trim();
+  if (!userMessage) return;
+
+  addMessage("You", userMessage, "user");
+  chatInput.value = "";
+  typingIndicator.classList.remove("hidden");
+
+  try {
+    const response = await fetch("http://localhost:3000/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        messages: [
+          { role: "system", content: "You are AI Co-Pilot, a Web3/DAO governance assistant." },
+          { role: "user", content: userMessage }
+        ],
+      }),
+    });
+
+    const data = await response.json();
+    typingIndicator.classList.add("hidden");
+    addMessage("AI Co-Pilot", data.text, "ai");
+
+  } catch (err) {
+    typingIndicator.classList.add("hidden");
+    addMessage("AI Co-Pilot", "⚠️ No response from AI.", "ai");
+    console.error(err);
+  }
+}
+
+// Event listeners
+sendBtn.addEventListener("click", sendMessage);
+chatInput.addEventListener("keypress", e => {
+  if (e.key === "Enter") sendMessage();
+});
+
+// Demo suggestion buttons
+document.querySelectorAll(".demo-suggestion").forEach(btn => {
+  btn.addEventListener("click", () => {
+    chatInput.value = btn.textContent;
+    sendMessage();
+  });
+});
+
+
+/* =========================================================
+   LOTTIE ANIMATIONS
+========================================================= */
+function initAnimations() {
+  const animations = {
+    heroLottie: "https://assets2.lottiefiles.com/packages/lf20_w51pcehl.json",
+    aboutLottie: "https://assets9.lottiefiles.com/packages/lf20_qp1q7mct.json",
+    benefitsLottie: "https://assets4.lottiefiles.com/packages/lf20_tutvdkg0.json",
+    ctaLottie: "https://assets3.lottiefiles.com/packages/lf20_fclga8fl.json",
+    demoLottie: "https://assets5.lottiefiles.com/packages/lf20_a2chheio.json",
+  };
+
+  Object.entries(animations).forEach(([id, path]) => {
+    const el = document.getElementById(id);
+    if (el)
+      lottie.loadAnimation({
+        container: el,
+        renderer: "svg",
+        loop: true,
+        autoplay: true,
+        path,
+      });
+  });
+}
+</script>
+    <script>
+  lucide.createIcons();
+</script>
+
+</body>
+</html>
